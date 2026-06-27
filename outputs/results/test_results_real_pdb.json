@@ -1,0 +1,11 @@
+{
+  "pearson_r": 0.5347,
+  "spearman_r": 0.5679,
+  "rmse": 11.4185,
+  "auroc": 0.8352,
+  "auprc": 0.4406,
+  "model": "DrugSynergy3D",
+  "structures": "Real PDB",
+  "epochs": 300,
+  "train_pairs": 1138
+}
