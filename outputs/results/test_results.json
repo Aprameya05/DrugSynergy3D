@@ -1,0 +1,13 @@
+{
+  "pearson_r": 0.5379,
+  "spearman_r": 0.5672,
+  "rmse": 11.2201,
+  "auroc": 0.834,
+  "auprc": 0.4469,
+  "epochs": 300,
+  "train_pairs": 1138,
+  "val_pairs": 144,
+  "test_pairs": 159,
+  "model_params": 2698497,
+  "notes": "Real ALMANAC data, synthetic AF2 structures, 300 epochs"
+}

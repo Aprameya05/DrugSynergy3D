@@ -1,0 +1,73 @@
+project:
+  name: DrugSynergy3D
+  version: "1.0"
+  seed: 42
+
+data:
+  almanac_url: "https://wiki.nci.nih.gov/download/attachments/338237347/ComboDrugGrowth_Nov2017.zip"
+  af2_base_url: "https://alphafold.ebi.ac.uk/files"
+  uniprot_mapping_url: "https://rest.uniprot.org/uniprotkb/search"
+  string_db_url: "https://stringdb-downloads.org/download/protein.links.v12.0/9606.protein.links.v12.0.txt.gz"
+  raw_dir: "data/raw"
+  processed_dir: "data/processed"
+  structures_dir: "data/structures"
+  pockets_dir: "data/pockets"
+  graphs_dir: "data/graphs"
+
+  # Graph construction
+  pocket_k_neighbors: 10          # k-NN for residue graph
+  pocket_distance_cutoff: 10.0    # Angstroms — residues within this of any drug-like atom
+  cross_protein_score_thresh: 400  # STRING DB combined score threshold (0-1000)
+
+  # Train/val/test split
+  train_frac: 0.8
+  val_frac: 0.1
+  test_frac: 0.1
+  split_by: "cell_line"           # split on cell lines to avoid data leakage
+
+model:
+  name: "DrugSynergy3D"
+  
+  # Per-drug protein pocket branch (GVP-GNN)
+  gvp:
+    node_dims: [128, 16]          # (scalar_dim, vector_dim)
+    edge_dims: [32, 4]
+    num_layers: 5
+    drop_rate: 0.1
+
+  # Drug molecular graph branch
+  drug_gnn:
+    hidden_dim: 128
+    num_layers: 4
+    heads: 4                      # GAT heads
+
+  # Cross-attention fusion
+  fusion:
+    d_model: 256
+    n_heads: 8
+    dropout: 0.1
+
+  # Synergy prediction head
+  head:
+    hidden_dims: [512, 256, 128]
+    dropout: 0.2
+    output_dim: 1                 # synergy score regression
+
+training:
+  epochs: 100
+  batch_size: 32
+  lr: 1.0e-4
+  weight_decay: 1.0e-5
+  scheduler: "cosine"
+  warmup_epochs: 5
+  gradient_clip: 1.0
+  loss: "mse"                     # + pearson correlation loss
+  pearson_weight: 0.3
+  device: "cuda"
+  num_workers: 4
+  checkpoint_dir: "outputs/checkpoints"
+  results_dir: "outputs/results"
+
+evaluation:
+  metrics: ["pearson_r", "spearman_r", "mse", "rmse", "auprc", "auroc"]
+  synergy_threshold: 10.0         # CSS score above this = synergistic
